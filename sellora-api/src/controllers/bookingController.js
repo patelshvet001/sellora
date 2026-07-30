@@ -1,5 +1,6 @@
 const prisma = require('../lib/prisma');
 const { z } = require('zod');
+const { sendBookingRequestedEmail, sendBookingStatusEmail, sendProviderBookingNotification } = require('../lib/mailer');
 
 function generateBookingNo() {
   const stamp = Date.now().toString(36).toUpperCase();
@@ -43,7 +44,7 @@ async function createBooking(req, res) {
         price: service.price,
         notes: data.notes || null,
       },
-      include: { service: true },
+      include: { service: { include: { provider: { include: { user: { select: { name: true, email: true } } } } } } },
     });
 
     await tx.payment.create({
@@ -61,6 +62,27 @@ async function createBooking(req, res) {
 
     return created;
   });
+
+  // Send email confirmation to customer (non-blocking)
+  try {
+    await sendBookingRequestedEmail(req.user.email, req.user.name, booking);
+  } catch (emailErr) {
+    console.error('Failed to send booking requested email:', emailErr.message);
+  }
+
+  // Notify provider (non-blocking)
+  try {
+    const providerUser = booking.service?.provider?.user;
+    if (providerUser?.email) {
+      await sendProviderBookingNotification(
+        providerUser.email,
+        providerUser.name,
+        { ...booking, customer: { name: req.user.name, phone: req.user.phone } }
+      );
+    }
+  } catch (providerEmailErr) {
+    console.error('Failed to send provider notification email:', providerEmailErr.message);
+  }
 
   return res.status(201).json({ message: 'Booking requested', booking });
 }
@@ -99,7 +121,7 @@ async function updateBookingStatus(req, res) {
 
   const booking = await prisma.booking.findUnique({
     where: { id: Number(req.params.id) },
-    include: { service: true },
+    include: { service: { include: { provider: { include: { user: { select: { name: true, email: true } } } } } } },
   });
   if (!booking) return res.status(404).json({ error: 'Booking not found' });
 
@@ -113,6 +135,7 @@ async function updateBookingStatus(req, res) {
   const updated = await prisma.booking.update({
     where: { id: booking.id },
     data: { status: parsed.data.status },
+    include: { service: true, customer: { select: { name: true, email: true } } },
   });
 
   await prisma.notification.create({
@@ -123,6 +146,16 @@ async function updateBookingStatus(req, res) {
       message: `Booking ${booking.bookingNo} is now ${parsed.data.status.replace(/_/g, ' ').toLowerCase()}.`,
     },
   });
+
+  // Send email update to customer (non-blocking)
+  try {
+    const customer = await prisma.user.findUnique({ where: { id: booking.customerId }, select: { name: true, email: true } });
+    if (customer?.email) {
+      await sendBookingStatusEmail(customer.email, customer.name, { ...updated, service: booking.service });
+    }
+  } catch (emailErr) {
+    console.error('Failed to send booking status email:', emailErr.message);
+  }
 
   return res.json({ message: 'Booking status updated', booking: updated });
 }

@@ -1,178 +1,55 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-
 const year = new Date().getFullYear();
-const email = ref('');
-const status = ref<'idle' | 'loading' | 'success' | 'error'>('idle');
-const errorMessage = ref('');
 
-async function submitNewsletter() {
-  const v = email.value.trim();
-  if (!v) return;
-  
-  // Simple validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(v)) {
-    status.value = 'error';
-    errorMessage.value = 'Please enter a valid email address.';
-    return;
-  }
+const links = [
+  { label: 'Shop', to: '/shop' },
+  { label: 'Services', to: '/services' },
+  { label: 'Become a Partner', to: '/auth/partner-register' },
+  { label: 'Privacy', to: '/privacy' },
+];
 
-  status.value = 'loading';
-  errorMessage.value = '';
-  // Simulate API call
-  await new Promise((r) => setTimeout(r, 800));
-  status.value = 'success';
-  email.value = '';
-}
+const socials = [
+  { label: 'Instagram', href: '#', path: 'M12 2c2.7 0 3.1 0 4.1.1 1.1 0 1.8.2 2.4.5.7.2 1.2.6 1.7 1.1.5.5.9 1 1.1 1.7.2.6.4 1.3.5 2.4 0 1 .1 1.4.1 4.1s0 3.1-.1 4.1c0 1.1-.2 1.8-.5 2.4a4.9 4.9 0 01-1.1 1.7 4.9 4.9 0 01-1.7 1.1c-.6.2-1.3.4-2.4.5-1 0-1.4.1-4.1.1s-3.1 0-4.1-.1c-1.1 0-1.8-.2-2.4-.5a4.9 4.9 0 01-1.7-1.1 4.9 4.9 0 01-1.1-1.7c-.2-.6-.4-1.3-.5-2.4C2 15.1 2 14.7 2 12s0-3.1.1-4.1c0-1.1.2-1.8.5-2.4.2-.7.6-1.2 1.1-1.7.5-.5 1-.9 1.7-1.1.6-.2 1.3-.4 2.4-.5C8.9 2 9.3 2 12 2zm0 5a5 5 0 100 10 5 5 0 000-10zm0 8.2a3.2 3.2 0 110-6.4 3.2 3.2 0 010 6.4zm5.2-8.4a1.2 1.2 0 100-2.4 1.2 1.2 0 000 2.4z' },
+  { label: 'X', href: '#', path: 'M18.9 3H22l-7.2 8.2L23.3 21H16.9l-5-6.5-5.7 6.5H2.9l7.7-8.8L2 3h6.6l4.5 6 5.8-6z' },
+  { label: 'LinkedIn', href: '#', path: 'M6.9 8.4H3.3V21h3.6V8.4zM5.1 3a2.1 2.1 0 100 4.2 2.1 2.1 0 000-4.2zM21 21h-3.6v-6.2c0-1.5-.5-2.5-1.9-2.5-1 0-1.6.7-1.9 1.4-.1.2-.1.6-.1.9V21h-3.6V8.4h3.5v1.6c.5-.7 1.3-1.8 3.2-1.8 2.3 0 4 1.5 4 4.8V21z' },
+];
 </script>
 
 <template>
-  <footer class="bg-gray-900 text-gray-400 border-t border-gray-800">
-    <!-- Main Directories -->
-    <div class="mx-auto max-w-6xl px-4 pt-16 pb-12">
-      <div class="grid grid-cols-1 md:grid-cols-12 gap-10">
-        
-        <!-- Brand Segment -->
-        <div class="md:col-span-4 space-y-4">
-          <div class="flex items-center gap-3">
-            <div class="h-11 w-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-black shadow-lg shadow-indigo-500/10">
-              S
-            </div>
-            <div>
-              <p class="font-extrabold text-white text-lg tracking-tight">Sellora</p>
-              <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Shop • Book • Deliver</p>
-            </div>
-          </div>
-          <p class="text-sm text-gray-400 max-w-sm leading-relaxed">
-            Sellora bridges the gap between local vendors, on-demand service providers, and eager customers. Discover, order, and get things delivered in minutes.
-          </p>
-          <!-- Social Badges -->
-          <div class="flex items-center gap-3 pt-2">
-            <a href="#" class="h-8 w-8 rounded-lg bg-gray-800 border border-gray-700 flex items-center justify-center text-white hover:bg-indigo-600 hover:border-indigo-500 hover:scale-110 active:scale-95 transition-all duration-200" aria-label="Facebook">
-              <span class="text-xs">FB</span>
-            </a>
-            <a href="#" class="h-8 w-8 rounded-lg bg-gray-800 border border-gray-700 flex items-center justify-center text-white hover:bg-indigo-600 hover:border-indigo-500 hover:scale-110 active:scale-95 transition-all duration-200" aria-label="X (formerly Twitter)">
-              <span class="text-xs">X</span>
-            </a>
-            <a href="#" class="h-8 w-8 rounded-lg bg-gray-800 border border-gray-700 flex items-center justify-center text-white hover:bg-indigo-600 hover:border-indigo-500 hover:scale-110 active:scale-95 transition-all duration-200" aria-label="Instagram">
-              <span class="text-xs">IG</span>
-            </a>
-            <a href="#" class="h-8 w-8 rounded-lg bg-gray-800 border border-gray-700 flex items-center justify-center text-white hover:bg-indigo-600 hover:border-indigo-500 hover:scale-110 active:scale-95 transition-all duration-200" aria-label="LinkedIn">
-              <span class="text-xs">LN</span>
-            </a>
-          </div>
-        </div>
+  <footer class="bg-gray-950 text-gray-400 border-t border-gray-800">
+    <div
+      class="mx-auto max-w-7xl px-5 sm:px-6 py-6 sm:py-8 flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
 
-        <!-- Directory Links -->
-        <div class="md:col-span-5 grid grid-cols-2 gap-8">
-          <div>
-            <p class="text-xs font-bold text-white uppercase tracking-widest mb-4">Shop Catalog</p>
-            <ul class="space-y-2.5 text-sm">
-              <li>
-                <NuxtLink to="/customer" class="hover:text-white transition duration-200 flex items-center gap-1.5">
-                  <span class="text-indigo-500 text-[10px]">●</span> Fresh Groceries
-                </NuxtLink>
-              </li>
-              <li>
-                <NuxtLink to="/customer" class="hover:text-white transition duration-200 flex items-center gap-1.5">
-                  <span class="text-indigo-500 text-[10px]">●</span> Fast Electronics
-                </NuxtLink>
-              </li>
-              <li>
-                <NuxtLink to="/customer" class="hover:text-white transition duration-200 flex items-center gap-1.5">
-                  <span class="text-indigo-500 text-[10px]">●</span> Household Services
-                </NuxtLink>
-              </li>
-              <li>
-                <NuxtLink to="/customer" class="hover:text-white transition duration-200 flex items-center gap-1.5">
-                  <span class="text-indigo-500 text-[10px]">●</span> Local Pharmacy
-                </NuxtLink>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <p class="text-xs font-bold text-white uppercase tracking-widest mb-4">Partner Hub</p>
-            <ul class="space-y-2.5 text-sm">
-              <li>
-                <NuxtLink to="/auth/partner-register" class="hover:text-white transition duration-200">
-                  Register as Merchant
-                </NuxtLink>
-              </li>
-              <li>
-                <NuxtLink to="/auth/partner-register" class="hover:text-white transition duration-200">
-                  Become Delivery Driver
-                </NuxtLink>
-              </li>
-              <li>
-                <NuxtLink to="/auth/partner-register" class="hover:text-white transition duration-200">
-                  Provide Home Services
-                </NuxtLink>
-              </li>
-              <li>
-                <a href="#" class="hover:text-white transition duration-200">Partner Resources</a>
-              </li>
-            </ul>
-          </div>
-        </div>
+      <!-- Brand -->
+      <NuxtLink to="/" class="flex items-center gap-2 shrink-0">
+          <img src="~/assets/logo.png" alt="Sellora"
+            class="h-9 w-auto transition-transform duration-300 group-hover:scale-105">
+      </NuxtLink>
 
-        <!-- Newsletter Sign-Up Column -->
-        <div class="md:col-span-3 space-y-4">
-          <p class="text-xs font-bold text-white uppercase tracking-widest">Newsletter</p>
-          <p class="text-sm leading-relaxed">
-            Get early access to flash sales, voucher giveaways, and local merchant highlights.
-          </p>
+      <!-- Links -->
+      <nav class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[13px]">
+        <NuxtLink v-for="link in links" :key="link.to" :to="link.to"
+          class="hover:text-lime-300 transition-colors duration-150">
+          {{ link.label }}
+        </NuxtLink>
+      </nav>
 
-          <div class="space-y-2">
-            <div class="flex gap-1.5 bg-gray-800 border border-gray-700/80 rounded-xl p-1 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/10 transition-all duration-200">
-              <input
-                v-model="email"
-                type="email"
-                placeholder="Enter your email"
-                class="flex-1 min-w-0 bg-transparent px-3 text-sm text-white outline-none placeholder-gray-500"
-                aria-label="Email Address for newsletter"
-                :disabled="status === 'loading' || status === 'success'"
-                @keydown.enter="submitNewsletter"
-              />
-              <button
-                type="button"
-                class="h-9 px-4 rounded-lg font-bold text-xs bg-indigo-600 hover:bg-indigo-700 text-white transition disabled:opacity-60 shrink-0"
-                :disabled="status === 'loading' || status === 'success'"
-                @click="submitNewsletter"
-              >
-                <span v-if="status === 'loading'">...</span>
-                <span v-else-if="status === 'success'">Joined</span>
-                <span v-else>Join</span>
-              </button>
-            </div>
-            
-            <p v-if="status === 'success'" class="text-xs text-emerald-500 flex items-center gap-1">
-              ✓ Successfully subscribed! Check your inbox.
-            </p>
-            <p v-if="status === 'error'" class="text-xs text-rose-500 flex items-center gap-1">
-              ⚠ {{ errorMessage }}
-            </p>
-          </div>
-        </div>
-
+      <!-- Socials -->
+      <div class="flex items-center gap-2 shrink-0">
+        <a v-for="s in socials" :key="s.label" :href="s.href" target="_blank" rel="noopener noreferrer"
+          class="h-7 w-7 rounded-md bg-gray-900 border border-gray-800 flex items-center justify-center text-gray-400 hover:text-black hover:bg-lime-400 hover:border-lime-400 transition-colors duration-150"
+          :aria-label="s.label">
+          <svg viewBox="0 0 24 24" class="h-3.5 w-3.5 fill-current">
+            <path :d="s.path" />
+          </svg>
+        </a>
       </div>
+    </div>
 
-      <!-- Footer Divider -->
-      <div class="h-px bg-gray-800 my-10" />
-
-      <!-- Sub-footer Rights & Technical details -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs">
-        <p class="text-gray-500">
-          © {{ year }} Sellora Inc. All rights reserved.
-        </p>
-        <div class="flex items-center gap-4 text-gray-500">
-          <a href="#" class="hover:text-white transition duration-150">Privacy Policy</a>
-          <span>•</span>
-          <a href="#" class="hover:text-white transition duration-150">Terms of Use</a>
-          <span>•</span>
-          <span class="font-medium text-gray-600 bg-gray-850 border border-gray-800 px-2 py-0.5 rounded">Nuxt 3 + TailwindCSS</span>
-        </div>
-      </div>
+    <div class="border-t border-gray-900">
+      <p class="max-w-7xl mx-auto px-5 sm:px-6 py-3 text-center text-[12px] text-gray-600">
+        © {{ year }} Sellora Inc. All rights reserved.
+      </p>
     </div>
   </footer>
 </template>

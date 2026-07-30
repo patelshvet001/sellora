@@ -1,5 +1,6 @@
 const prisma = require('../lib/prisma');
 const { z } = require('zod');
+const { sendOrderPlacedEmail, sendOrderStatusEmail, sendVendorOrderNotification } = require('../lib/mailer');
 
 function generateOrderNumber() {
   const stamp = Date.now().toString(36).toUpperCase();
@@ -81,7 +82,7 @@ async function createOrder(req, res) {
         notes: data.notes || null,
         items: { create: lineItems },
       },
-      include: { items: { include: { product: true } }, address: true },
+include: { items: { include: { product: { include: { vendor: true } } } }, address: true, payment: true },
     });
 
     await tx.payment.create({
@@ -111,6 +112,35 @@ async function createOrder(req, res) {
 
     return created;
   });
+
+  // Send email confirmation to customer (non-blocking)
+  try {
+    await sendOrderPlacedEmail(req.user.email, req.user.name, order);
+  } catch (emailErr) {
+    console.error('Failed to send order placed email:', emailErr.message);
+  }
+
+  // Notify each vendor whose products are in this order (non-blocking)
+  try {
+    const vendorIds = [...new Set(order.items.map(it => it.product.vendorId))];
+    for (const vendorId of vendorIds) {
+      const vendorItems = order.items.filter(it => it.product.vendorId === vendorId);
+      const vendorProfile = await prisma.vendorProfile.findUnique({
+        where: { id: vendorId },
+        include: { user: { select: { name: true, email: true } } },
+      });
+      if (vendorProfile?.user?.email) {
+        await sendVendorOrderNotification(
+          vendorProfile.user.email,
+          vendorProfile.user.name,
+          { ...order, customer: { name: req.user.name } },
+          vendorItems
+        );
+      }
+    }
+  } catch (vendorEmailErr) {
+    console.error('Failed to send vendor notification email:', vendorEmailErr.message);
+  }
 
   return res.status(201).json({ message: 'Order placed', order });
 }
@@ -212,6 +242,7 @@ async function updateOrderStatus(req, res) {
   const updated = await prisma.order.update({
     where: { id: order.id },
     data: { status: parsed.data.status },
+    include: { items: { include: { product: true } }, address: true, payment: true, customer: { select: { name: true, email: true } } },
   });
 
   await prisma.notification.create({
@@ -222,6 +253,15 @@ async function updateOrderStatus(req, res) {
       message: `Order ${order.orderNumber} is now ${parsed.data.status.replace(/_/g, ' ').toLowerCase()}.`,
     },
   });
+
+  // Send email update to customer (non-blocking)
+  try {
+    if (updated.customer?.email) {
+      await sendOrderStatusEmail(updated.customer.email, updated.customer.name, updated);
+    }
+  } catch (emailErr) {
+    console.error('Failed to send order status email:', emailErr.message);
+  }
 
   return res.json({ message: 'Order status updated', order: updated });
 }

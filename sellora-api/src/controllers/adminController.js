@@ -1,4 +1,5 @@
 const prisma = require('../lib/prisma');
+const { sendApprovalStatusEmail } = require('../lib/mailer');
 
 // GET /api/admin/stats — platform-wide overview cards
 async function getAdminStats(req, res) {
@@ -114,6 +115,20 @@ async function approveVendor(req, res) {
     where: { id: Number(req.params.id) },
     data: { isApproved },
   });
+
+  // Send email notification to vendor
+  try {
+    const vendorWithUser = await prisma.vendorProfile.findUnique({
+      where: { id: Number(req.params.id) },
+      include: { user: { select: { name: true, email: true } } },
+    });
+    if (vendorWithUser?.user?.email) {
+      await sendApprovalStatusEmail(vendorWithUser.user.email, vendorWithUser.user.name, 'VENDOR', isApproved);
+    }
+  } catch (emailErr) {
+    console.error('Failed to send vendor approval email:', emailErr.message);
+  }
+
   return res.json({ message: isApproved ? 'Vendor approved' : 'Vendor approval revoked', vendor });
 }
 
@@ -133,6 +148,20 @@ async function approveProvider(req, res) {
     where: { id: Number(req.params.id) },
     data: { isApproved },
   });
+
+  // Send email notification to provider
+  try {
+    const providerWithUser = await prisma.serviceProviderProfile.findUnique({
+      where: { id: Number(req.params.id) },
+      include: { user: { select: { name: true, email: true } } },
+    });
+    if (providerWithUser?.user?.email) {
+      await sendApprovalStatusEmail(providerWithUser.user.email, providerWithUser.user.name, 'SERVICE_PROVIDER', isApproved);
+    }
+  } catch (emailErr) {
+    console.error('Failed to send provider approval email:', emailErr.message);
+  }
+
   return res.json({ message: isApproved ? 'Provider approved' : 'Provider approval revoked', provider });
 }
 
@@ -152,6 +181,20 @@ async function approveDeliveryPartner(req, res) {
     where: { id: Number(req.params.id) },
     data: { isApproved },
   });
+
+  // Send email notification to delivery partner
+  try {
+    const partnerWithUser = await prisma.deliveryPartnerProfile.findUnique({
+      where: { id: Number(req.params.id) },
+      include: { user: { select: { name: true, email: true } } },
+    });
+    if (partnerWithUser?.user?.email) {
+      await sendApprovalStatusEmail(partnerWithUser.user.email, partnerWithUser.user.name, 'DELIVERY_PARTNER', isApproved);
+    }
+  } catch (emailErr) {
+    console.error('Failed to send delivery partner approval email:', emailErr.message);
+  }
+
   return res.json({ message: isApproved ? 'Delivery partner approved' : 'Approval revoked', partner });
 }
 
