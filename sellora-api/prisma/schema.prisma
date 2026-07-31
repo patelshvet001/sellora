@@ -7,40 +7,31 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model User {
-  id              Int                     @id @default(autoincrement())
-  name            String
-  email           String                  @unique
-  phone           String?                 @unique
-  password        String
-  role            Role                    @default(CUSTOMER)
-  avatarUrl       String?
-  isVerified      Boolean                 @default(false)
-  isActive        Boolean                 @default(true)
-  otpCode         String?                 @db.Text
-  otpExpiry       DateTime?
-  otpAttempts     Int                     @default(0)
-  createdAt       DateTime                @default(now())
-  updatedAt       DateTime                @updatedAt
-  addresses       Address[]
-  auditLogs       AuditLog[]
-  bookings        Booking[]               @relation("CustomerBookings")
-  deliveryProfile DeliveryPartnerProfile?
-  notifications   Notification[]
-  orders          Order[]                 @relation("CustomerOrders")
-  reports         Report[]                @relation("ReportedByUser")
-  reviews         Review[]
-  providerProfile ServiceProviderProfile?
-  supportTickets  SupportTicket[]
-  vendorProfile   VendorProfile?
-  wallet          Wallet?
+  id          Int       @default(autoincrement())
+  name        String
+  email       String
+  phone       String?
+  password    String
+  role        Role      @default(CUSTOMER)
+  avatarUrl   String?
+  isVerified  Boolean   @default(false)
+  isActive    Boolean   @default(true)
+  otpCode     String?   @db.Text
+  otpExpiry   DateTime?
+  otpAttempts Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@map("users")
+  @@ignore
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model VendorProfile {
-  id         Int       @id @default(autoincrement())
-  userId     Int       @unique
+  id         Int      @default(autoincrement())
+  userId     Int
   storeName  String
   category   String
   gstNumber  String?
@@ -48,35 +39,35 @@ model VendorProfile {
   city       String
   pincode    String
   logoUrl    String?
-  isApproved Boolean   @default(false)
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  products   Product[]
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isApproved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@map("vendor_profiles")
+  @@ignore
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model ServiceProviderProfile {
-  id           Int       @id @default(autoincrement())
-  userId       Int       @unique
+  id           Int      @default(autoincrement())
+  userId       Int
   businessName String
   category     String
   city         String
   pincode      String
-  bio          String?   @db.Text
-  isApproved   Boolean   @default(false)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  services     Service[]
+  bio          String?  @db.Text
+  isApproved   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@map("service_provider_profiles")
+  @@ignore
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model DeliveryPartnerProfile {
-  id            Int      @id @default(autoincrement())
-  userId        Int      @unique
+  id            Int      @default(autoincrement())
+  userId        Int
   vehicleType   String
   vehicleNumber String
   licenseNumber String
@@ -87,70 +78,65 @@ model DeliveryPartnerProfile {
   currentLng    Float?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  deliveries    Order[]  @relation("DeliveryAssignments")
 
   @@map("delivery_partner_profiles")
+  @@ignore
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model ProductCategory {
-  id        Int       @id @default(autoincrement())
-  name      String    @unique
-  slug      String    @unique
+  id        Int      @default(autoincrement())
+  name      String
+  slug      String
   iconUrl   String?
-  isActive  Boolean   @default(true)
-  createdAt DateTime  @default(now())
-  products  Product[]
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
 
   @@map("product_categories")
+  @@ignore
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model Product {
-  id            Int             @id @default(autoincrement())
+  id            Int      @default(autoincrement())
   vendorId      Int
   categoryId    Int
   name          String
-  slug          String          @unique
-  description   String?         @db.Text
-  price         Decimal         @db.Decimal(10, 2)
-  discountPrice Decimal?        @db.Decimal(10, 2)
-  stock         Int             @default(0)
+  slug          String
+  description   String?  @db.Text
+  price         Decimal  @db.Decimal(10, 2)
+  discountPrice Decimal? @db.Decimal(10, 2)
+  stock         Int      @default(0)
   imageUrl      String?
-  isActive      Boolean         @default(true)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  orderItems    OrderItem[]
-  category      ProductCategory @relation(fields: [categoryId], references: [id])
-  vendor        VendorProfile   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  reviews       Review[]
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  @@index([vendorId])
-  @@index([categoryId])
   @@map("products")
+  @@ignore
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model Service {
-  id           Int                    @id @default(autoincrement())
+  id           Int      @default(autoincrement())
   providerId   Int
   title        String
-  slug         String                 @unique
-  description  String?                @db.Text
-  price        Decimal                @db.Decimal(10, 2)
-  durationMins Int                    @default(60)
+  slug         String
+  description  String?  @db.Text
+  price        Decimal  @db.Decimal(10, 2)
+  durationMins Int      @default(60)
   imageUrl     String?
-  isActive     Boolean                @default(true)
-  createdAt    DateTime               @default(now())
-  updatedAt    DateTime               @updatedAt
-  bookings     Booking[]
-  reviews      Review[]
-  provider     ServiceProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  @@index([providerId])
   @@map("services")
+  @@ignore
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model Address {
-  id        Int         @id @default(autoincrement())
+  id        Int         @default(autoincrement())
   userId    Int
   label     AddressType @default(HOME)
   line1     String
@@ -162,58 +148,49 @@ model Address {
   lng       Float?
   isDefault Boolean     @default(false)
   createdAt DateTime    @default(now())
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orders    Order[]
 
-  @@index([userId], map: "addresses_userId_fkey")
   @@map("addresses")
+  @@ignore
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model Order {
-  id                Int                     @id @default(autoincrement())
-  orderNumber       String                  @unique
+  id                Int         @default(autoincrement())
+  orderNumber       String
   customerId        Int
   addressId         Int
   deliveryPartnerId Int?
-  status            OrderStatus             @default(PENDING)
-  subtotal          Decimal                 @db.Decimal(10, 2)
-  deliveryFee       Decimal                 @default(0.00) @db.Decimal(10, 2)
-  discount          Decimal                 @default(0.00) @db.Decimal(10, 2)
-  total             Decimal                 @db.Decimal(10, 2)
+  status            OrderStatus @default(PENDING)
+  subtotal          Decimal     @db.Decimal(10, 2)
+  deliveryFee       Decimal     @default(0.00) @db.Decimal(10, 2)
+  discount          Decimal     @default(0.00) @db.Decimal(10, 2)
+  total             Decimal     @db.Decimal(10, 2)
   couponCode        String?
   notes             String?
-  createdAt         DateTime                @default(now())
-  updatedAt         DateTime                @updatedAt
-  items             OrderItem[]
-  address           Address                 @relation(fields: [addressId], references: [id])
-  customer          User                    @relation("CustomerOrders", fields: [customerId], references: [id])
-  deliveryPartner   DeliveryPartnerProfile? @relation("DeliveryAssignments", fields: [deliveryPartnerId], references: [id])
-  payment           Payment?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
 
-  @@index([customerId])
-  @@index([deliveryPartnerId])
-  @@index([addressId], map: "orders_addressId_fkey")
   @@map("orders")
+  @@ignore
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model OrderItem {
-  id        Int     @id @default(autoincrement())
+  id        Int     @default(autoincrement())
   orderId   Int
   productId Int
   quantity  Int
   unitPrice Decimal @db.Decimal(10, 2)
   lineTotal Decimal @db.Decimal(10, 2)
-  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product   Product @relation(fields: [productId], references: [id])
 
-  @@index([orderId], map: "order_items_orderId_fkey")
-  @@index([productId], map: "order_items_productId_fkey")
   @@map("order_items")
+  @@ignore
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model Booking {
-  id          Int           @id @default(autoincrement())
-  bookingNo   String        @unique
+  id          Int           @default(autoincrement())
+  bookingNo   String
   customerId  Int
   serviceId   Int
   status      BookingStatus @default(REQUESTED)
@@ -225,71 +202,68 @@ model Booking {
   notes       String?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
-  customer    User          @relation("CustomerBookings", fields: [customerId], references: [id])
-  service     Service       @relation(fields: [serviceId], references: [id])
-  payment     Payment?
 
-  @@index([customerId])
-  @@index([serviceId])
   @@map("bookings")
+  @@ignore
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model Payment {
-  id        Int           @id @default(autoincrement())
-  orderId   Int?          @unique
-  bookingId Int?          @unique
+  id        Int           @default(autoincrement())
+  orderId   Int?
+  bookingId Int?
   amount    Decimal       @db.Decimal(10, 2)
   method    PaymentMethod @default(COD)
   status    PaymentStatus @default(PENDING)
   txnRef    String?
   paidAt    DateTime?
   createdAt DateTime      @default(now())
-  booking   Booking?      @relation(fields: [bookingId], references: [id])
-  order     Order?        @relation(fields: [orderId], references: [id])
 
   @@map("payments")
+  @@ignore
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model Wallet {
-  id           Int                 @id @default(autoincrement())
-  userId       Int                 @unique
-  balance      Decimal             @default(0.00) @db.Decimal(10, 2)
-  updatedAt    DateTime            @updatedAt
-  transactions WalletTransaction[]
-  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        Int      @default(autoincrement())
+  userId    Int
+  balance   Decimal  @default(0.00) @db.Decimal(10, 2)
+  updatedAt DateTime @updatedAt
 
   @@map("wallets")
+  @@ignore
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model WalletTransaction {
-  id        Int      @id @default(autoincrement())
+  id        Int      @default(autoincrement())
   walletId  Int
   amount    Decimal  @db.Decimal(10, 2)
   type      String
   reason    String
   createdAt DateTime @default(now())
-  wallet    Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
 
-  @@index([walletId], map: "wallet_transactions_walletId_fkey")
   @@map("wallet_transactions")
+  @@ignore
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model Notification {
-  id        Int                 @id @default(autoincrement())
+  id        Int                 @default(autoincrement())
   userId    Int
   channel   NotificationChannel @default(IN_APP)
   title     String
   message   String              @db.Text
   isRead    Boolean             @default(false)
   createdAt DateTime            @default(now())
-  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
   @@map("notifications")
+  @@ignore
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model Review {
-  id        Int      @id @default(autoincrement())
+  id        Int      @default(autoincrement())
   userId    Int
   productId Int?
   serviceId Int?
@@ -297,47 +271,43 @@ model Review {
   comment   String?  @db.Text
   isFlagged Boolean  @default(false)
   createdAt DateTime @default(now())
-  product   Product? @relation(fields: [productId], references: [id])
-  service   Service? @relation(fields: [serviceId], references: [id])
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([productId], map: "reviews_productId_fkey")
-  @@index([serviceId], map: "reviews_serviceId_fkey")
-  @@index([userId], map: "reviews_userId_fkey")
   @@map("reviews")
+  @@ignore
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model Report {
-  id           Int      @id @default(autoincrement())
+  id           Int      @default(autoincrement())
   reportedById Int
   targetType   String
   targetId     Int
   reason       String
   status       String   @default("OPEN")
   createdAt    DateTime @default(now())
-  reportedBy   User     @relation("ReportedByUser", fields: [reportedById], references: [id])
 
-  @@index([reportedById], map: "reports_reportedById_fkey")
   @@map("reports")
+  @@ignore
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model SupportTicket {
-  id        Int                 @id @default(autoincrement())
+  id        Int                 @default(autoincrement())
   userId    Int
   subject   String
   message   String              @db.Text
   status    SupportTicketStatus @default(OPEN)
   createdAt DateTime            @default(now())
   updatedAt DateTime            @updatedAt
-  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId], map: "support_tickets_userId_fkey")
   @@map("support_tickets")
+  @@ignore
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model Coupon {
-  id            Int       @id @default(autoincrement())
-  code          String    @unique
+  id            Int       @default(autoincrement())
+  code          String
   description   String?
   discountType  String
   discountValue Decimal   @db.Decimal(10, 2)
@@ -349,10 +319,12 @@ model Coupon {
   createdAt     DateTime  @default(now())
 
   @@map("coupons")
+  @@ignore
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model Banner {
-  id        Int      @id @default(autoincrement())
+  id        Int      @default(autoincrement())
   title     String
   imageUrl  String
   linkUrl   String?
@@ -361,29 +333,32 @@ model Banner {
   createdAt DateTime @default(now())
 
   @@map("banners")
+  @@ignore
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model Setting {
-  id        Int      @id @default(autoincrement())
-  key       String   @unique
+  id        Int      @default(autoincrement())
+  key       String
   value     String   @db.Text
   updatedAt DateTime @updatedAt
 
   @@map("settings")
+  @@ignore
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model AuditLog {
-  id         Int      @id @default(autoincrement())
+  id         Int      @default(autoincrement())
   userId     Int?
   action     String
   targetType String?
   targetId   Int?
   metaJson   String?  @db.Text
   createdAt  DateTime @default(now())
-  user       User?    @relation(fields: [userId], references: [id])
 
-  @@index([userId], map: "audit_logs_userId_fkey")
   @@map("audit_logs")
+  @@ignore
 }
 
 enum Role {

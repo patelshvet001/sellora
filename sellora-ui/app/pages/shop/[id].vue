@@ -4,14 +4,13 @@ import ProductDetail from '~/components/product/ProductDetail.vue';
 const route = useRoute();
 
 useHead({
-  title: computed(() => {
-    // Will be overridden dynamically once product loads
-    return 'Product Details';
-  }),
+  title: computed(() => 'Product Details — Sellora'),
+  meta: [
+    { name: 'description', content: 'View product details, reviews, and purchase options on Sellora.' },
+  ],
 });
 </script>
 
 <template>
   <ProductDetail :id="route.params.id as string" />
 </template>
-
