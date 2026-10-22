@@ -1,0 +1,422 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model User {
+  id          Int       @default(autoincrement())
+  name        String
+  email       String
+  phone       String?
+  password    String
+  role        Role      @default(CUSTOMER)
+  avatarUrl   String?
+  isVerified  Boolean   @default(false)
+  isActive    Boolean   @default(true)
+  otpCode     String?   @db.Text
+  otpExpiry   DateTime?
+  otpAttempts Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("users")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model VendorProfile {
+  id         Int      @default(autoincrement())
+  userId     Int
+  storeName  String
+  category   String
+  gstNumber  String?
+  address    String
+  city       String
+  pincode    String
+  logoUrl    String?
+  isApproved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("vendor_profiles")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model ServiceProviderProfile {
+  id           Int      @default(autoincrement())
+  userId       Int
+  businessName String
+  category     String
+  city         String
+  pincode      String
+  bio          String?  @db.Text
+  isApproved   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("service_provider_profiles")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model DeliveryPartnerProfile {
+  id            Int      @default(autoincrement())
+  userId        Int
+  vehicleType   String
+  vehicleNumber String
+  licenseNumber String
+  city          String
+  isApproved    Boolean  @default(false)
+  isOnline      Boolean  @default(false)
+  currentLat    Float?
+  currentLng    Float?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("delivery_partner_profiles")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model ProductCategory {
+  id        Int      @default(autoincrement())
+  name      String
+  slug      String
+  iconUrl   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@map("product_categories")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Product {
+  id            Int      @default(autoincrement())
+  vendorId      Int
+  categoryId    Int
+  name          String
+  slug          String
+  description   String?  @db.Text
+  price         Decimal  @db.Decimal(10, 2)
+  discountPrice Decimal? @db.Decimal(10, 2)
+  stock         Int      @default(0)
+  imageUrl      String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("products")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Service {
+  id           Int      @default(autoincrement())
+  providerId   Int
+  title        String
+  slug         String
+  description  String?  @db.Text
+  price        Decimal  @db.Decimal(10, 2)
+  durationMins Int      @default(60)
+  imageUrl     String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("services")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Address {
+  id        Int         @default(autoincrement())
+  userId    Int
+  label     AddressType @default(HOME)
+  line1     String
+  line2     String?
+  city      String
+  state     String
+  pincode   String
+  lat       Float?
+  lng       Float?
+  isDefault Boolean     @default(false)
+  createdAt DateTime    @default(now())
+
+  @@map("addresses")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Order {
+  id                Int         @default(autoincrement())
+  orderNumber       String
+  customerId        Int
+  addressId         Int
+  deliveryPartnerId Int?
+  status            OrderStatus @default(PENDING)
+  subtotal          Decimal     @db.Decimal(10, 2)
+  deliveryFee       Decimal     @default(0.00) @db.Decimal(10, 2)
+  discount          Decimal     @default(0.00) @db.Decimal(10, 2)
+  total             Decimal     @db.Decimal(10, 2)
+  couponCode        String?
+  notes             String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@map("orders")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model OrderItem {
+  id        Int     @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int
+  unitPrice Decimal @db.Decimal(10, 2)
+  lineTotal Decimal @db.Decimal(10, 2)
+
+  @@map("order_items")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Booking {
+  id          Int           @default(autoincrement())
+  bookingNo   String
+  customerId  Int
+  serviceId   Int
+  status      BookingStatus @default(REQUESTED)
+  scheduledAt DateTime
+  address     String
+  city        String
+  pincode     String
+  price       Decimal       @db.Decimal(10, 2)
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("bookings")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Payment {
+  id        Int           @default(autoincrement())
+  orderId   Int?
+  bookingId Int?
+  amount    Decimal       @db.Decimal(10, 2)
+  method    PaymentMethod @default(COD)
+  status    PaymentStatus @default(PENDING)
+  txnRef    String?
+  paidAt    DateTime?
+  createdAt DateTime      @default(now())
+
+  @@map("payments")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Wallet {
+  id        Int      @default(autoincrement())
+  userId    Int
+  balance   Decimal  @default(0.00) @db.Decimal(10, 2)
+  updatedAt DateTime @updatedAt
+
+  @@map("wallets")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model WalletTransaction {
+  id        Int      @default(autoincrement())
+  walletId  Int
+  amount    Decimal  @db.Decimal(10, 2)
+  type      String
+  reason    String
+  createdAt DateTime @default(now())
+
+  @@map("wallet_transactions")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Notification {
+  id        Int                 @default(autoincrement())
+  userId    Int
+  channel   NotificationChannel @default(IN_APP)
+  title     String
+  message   String              @db.Text
+  isRead    Boolean             @default(false)
+  createdAt DateTime            @default(now())
+
+  @@map("notifications")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Review {
+  id        Int      @default(autoincrement())
+  userId    Int
+  productId Int?
+  serviceId Int?
+  rating    Int
+  comment   String?  @db.Text
+  isFlagged Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("reviews")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Report {
+  id           Int      @default(autoincrement())
+  reportedById Int
+  targetType   String
+  targetId     Int
+  reason       String
+  status       String   @default("OPEN")
+  createdAt    DateTime @default(now())
+
+  @@map("reports")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model SupportTicket {
+  id        Int                 @default(autoincrement())
+  userId    Int
+  subject   String
+  message   String              @db.Text
+  status    SupportTicketStatus @default(OPEN)
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  @@map("support_tickets")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Coupon {
+  id            Int       @default(autoincrement())
+  code          String
+  description   String?
+  discountType  String
+  discountValue Decimal   @db.Decimal(10, 2)
+  minOrderValue Decimal   @default(0.00) @db.Decimal(10, 2)
+  maxUses       Int?
+  usedCount     Int       @default(0)
+  expiresAt     DateTime?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+
+  @@map("coupons")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Banner {
+  id        Int      @default(autoincrement())
+  title     String
+  imageUrl  String
+  linkUrl   String?
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@map("banners")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Setting {
+  id        Int      @default(autoincrement())
+  key       String
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model AuditLog {
+  id         Int      @default(autoincrement())
+  userId     Int?
+  action     String
+  targetType String?
+  targetId   Int?
+  metaJson   String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  @@map("audit_logs")
+  @@ignore
+}
+
+enum Role {
+  CUSTOMER
+  VENDOR
+  SERVICE_PROVIDER
+  DELIVERY_PARTNER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PACKED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+  RETURNED
+}
+
+enum BookingStatus {
+  REQUESTED
+  ACCEPTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  REJECTED
+}
+
+enum PaymentMethod {
+  COD
+  UPI
+  CARD
+  WALLET
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum NotificationChannel {
+  PUSH
+  EMAIL
+  IN_APP
+}
+
+enum SupportTicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum AddressType {
+  HOME
+  WORK
+  OTHER
+}
